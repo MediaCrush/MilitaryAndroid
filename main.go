@@ -1,24 +1,24 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/jdiez17/go-irc"
+	"os"
 	"strings"
 	"time"
-    "flag"
-    "os"
 )
 
 func main() {
-    fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-    configFile := fs.String("config", "", "The config.json.")
-    fs.Parse(os.Args[1:])
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	configFile := fs.String("config", "", "The config.json.")
+	fs.Parse(os.Args[1:])
 
-    err := loadConfig(*configFile)
-    if err != nil {
-        fmt.Println("Error reading the configuration: " + err.Error())
-        return
-    }
+	err := loadConfig(*configFile)
+	if err != nil {
+		fmt.Println("Error reading the configuration: " + err.Error())
+		return
+	}
 
 	conn, err := irc.NewConnection(Config.IRC.Server, int(Config.IRC.Port))
 	if err != nil {
@@ -30,15 +30,15 @@ func main() {
 	conn.LogIn(irc.Identity{Nick: Config.Nick})
 
 	conn.AddHandler(irc.MOTD_END, func(c *irc.Connection, e *irc.Event) {
-        if Config.NickServPassword != "" {
-            c.Privmsg("NickServ", "identify " + Config.NickServPassword)
-        }
+		if Config.NickServPassword != "" {
+			c.Privmsg("NickServ", "identify "+Config.NickServPassword)
+		}
 
-        for _, channel := range Config.Channels {
-            c.Join(channel)
-        }
+		for _, channel := range Config.Channels {
+			c.Join(channel)
+		}
 	})
-    conn.AddHandler(irc.PRIVMSG, expandGithubIssue) 
+	conn.AddHandler(irc.PRIVMSG, expandGithubIssue)
 
 	bot := irc.NewBot(conn)
 	bot.AddCommand("echo", func(c *irc.Connection, e *irc.Event) {
