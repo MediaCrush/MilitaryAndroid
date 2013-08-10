@@ -5,10 +5,16 @@ import (
 	"github.com/jdiez17/go-irc"
 	"strings"
 	"time"
+    "flag"
+    "os"
 )
 
 func main() {
-    err := loadConfig("config.json")
+    fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+    configFile := fs.String("config", "", "The config.json.")
+    fs.Parse(os.Args[1:])
+
+    err := loadConfig(*configFile)
     if err != nil {
         fmt.Println("Error reading the configuration: " + err.Error())
         return
