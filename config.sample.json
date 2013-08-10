@@ -1,0 +1,13 @@
+{
+    "IRC": {
+        "Server": "irc.freenode.net",
+        "Port": 6667
+    },
+
+    "Nick": "MilitaryAndroid",
+    "NickServPassword": "!!changeme!!",
+
+    "Channels": [
+        "#mediacrush"
+    ]
+}
