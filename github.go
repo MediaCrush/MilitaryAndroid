@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/jdiez17/go-irc"
 	"io/ioutil"
@@ -10,7 +11,7 @@ import (
 	"strconv"
 )
 
-var issueRegexp *regexp.Regexp = regexp.MustCompile("\\#([0-9]+)")
+var issueRegexp *regexp.Regexp = regexp.MustCompile(`#([0-9]+)`)
 
 const (
 	githubIssueUrl string = "https://api.github.com/repos/%s/%s/issues/%d"
@@ -27,6 +28,9 @@ func getGithubIssue(owner, repo string, issue int) (*githubIssue, error) {
 	res, err := http.Get(rqurl)
 	if err != nil {
 		return nil, err
+	}
+	if res.StatusCode == 404 {
+		return nil, errors.New("Issue not found.")
 	}
 
 	bytes, err := ioutil.ReadAll(res.Body)
@@ -53,10 +57,9 @@ func expandGithubIssue(c *irc.Connection, e *irc.Event) {
 	if issue != -1 {
 		ghissue, err := getGithubIssue("MediaCrush", "MediaCrush", issue)
 		if err != nil {
-			message := fmt.Sprintf("You're not going to space today. GitHub is broken. (%s)", err.Error())
-			e.ReactToChannel(c, message)
-			return
+			return // Silently ignore errors
 		}
+
 		message := fmt.Sprintf(issueResponse, issue, ghissue.Title, ghissue.Html_url)
 		e.ReactToChannel(c, message)
 	}
